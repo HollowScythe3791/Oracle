@@ -4,3 +4,5 @@ elasticsearch-9.1.2
 kibana-9.1.2
 elasticstuf.txt
 logs
+data/elasticsearch
+
