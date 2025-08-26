@@ -1,2 +1,6 @@
 venv
 .env
+elasticsearch-9.1.2
+kibana-9.1.2
+elasticstuf.txt
+logs
