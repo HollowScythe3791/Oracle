@@ -1,3 +1,4 @@
+import asyncio
 from langgraph.graph import StateGraph, MessagesState, START, END
 from agents.super_agent import super_agent_router
 from agents.chat_agent import chat_agent_node
@@ -17,21 +18,31 @@ builder.add_edge("rag_agent", END)
 
 graph = builder.compile()
 
+from langchain_core.messages import HumanMessage, AIMessage
 
-# Chat loop (for CLI demo)
-from langchain_core.messages import HumanMessage
-print("Welcome to the Modular LangGraph Super Agent! Type 'exit' to quit.")
-messages = []
-while True:
-    user_input = input("You: ")
-    if user_input.strip().lower() == "exit":
-        print("Goodbye!")
-        break
-    messages.append(HumanMessage(content=user_input))
-    result = graph.invoke({"messages": messages})
-    # Print only the latest assistant reply
-    from langchain_core.messages import AIMessage
-    for msg in result["messages"]:
-        if isinstance(msg, AIMessage):
+async def async_chat_loop():
+    print("Welcome to the Modular LangGraph Super Agent! Type 'exit' to quit.")
+    messages = []
+    while True:
+        user_input = input("You: ")
+        if user_input.strip().lower() == "exit":
+            print("Goodbye!")
+            break
+        messages.append(HumanMessage(content=user_input))
+        
+        # Use async invoke to call the graph because rag_agent_node is async
+        result = await graph.ainvoke({"messages": messages})
+        
+        # Print only the latest assistant reply
+        assistant_msgs = [msg for msg in result["messages"] if isinstance(msg, AIMessage)]
+        for msg in assistant_msgs:
             print("Assistant:", msg.content)
-    messages = result["messages"]
+        
+        messages = result["messages"]
+
+def main():
+    asyncio.run(async_chat_loop())
+
+if __name__ == "__main__":
+    main()
+
